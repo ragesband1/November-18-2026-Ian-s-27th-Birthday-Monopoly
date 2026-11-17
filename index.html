@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ian's 27th Birthday Monopoly</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #111827 100%);
+            color: #f3f4f6;
+        }
+        .font-arcade {
+            font-family: 'Press Start 2P', cursive;
+        }
+        /* Custom scrollbar for game log */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.4);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.9); }
+        }
+        .birthday-glow {
+            animation: pulse-glow 3s infinite;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-x-hidden selection:bg-pink-500 selection:text-white">
+
+    <!-- Header Banner -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-purple-500/30 px-4 py-3 sticky top-0 z-50 flex flex-wrap items-center justify-between shadow-xl">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-2 rounded-xl font-arcade text-xs md:text-sm shadow-lg flex items-center gap-2">
+                <span>🎂</span> IAN @ 27
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-extrabold bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent">
+                    Ian's 27th Birthday Monopoly
+                </h1>
+                <p class="text-xs text-gray-400 hidden sm:block">The ultimate celebration property tycoon adventure!</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+            <button id="soundToggleBtn" onclick="toggleSound()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/40 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                🔊 <span id="soundStatus">Sound On</span>
+            </button>
+            <button id="voiceToggleBtn" onclick="toggleVoice()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-pink-300 border border-pink-500/40 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                🎙️ <span id="voiceStatus">Voice AI On</span>
+            </button>
+            <button onclick="openRulesModal()" class="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg text-xs font-semibold shadow-md transition flex items-center gap-1">
+                📜 Rules
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="flex-1 flex flex-col lg:flex-row p-2 md:p-4 gap-4 max-w-[1700px] mx-auto w-full overflow-hidden">
+        
+        <!-- Left / Top Sidebar: Player Status Dashboard & Game Log -->
+        <section class="w-full lg:w-80 flex flex-col gap-4 shrink-0">
+            <!-- Players Dashboard -->
+            <div class="bg-slate-900/90 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+                <h2 class="text-sm font-bold text-purple-300 flex items-center justify-between uppercase tracking-wider">
+                    <span>👥 Players Dashboard</span>
+                    <span id="roundIndicator" class="text-xs bg-purple-900/60 text-purple-200 px-2 py-0.5 rounded-full">Round 1</span>
+                </h2>
+                
+                <div id="playersListContainer" class="flex flex-col gap-2.5 max-h-[280px] overflow-y-auto pr-1">
+                    <!-- Dynamic player cards inserted here -->
+                </div>
+            </div>
+
+            <!-- Game Log & Announcer -->
+            <div class="bg-slate-900/90 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 shadow-xl flex-1 flex flex-col min-h-[220px]">
+                <h2 class="text-sm font-bold text-pink-300 mb-2 flex items-center gap-2">
+                    <span>📢 Celebration Live Feed</span>
+                </h2>
+                <div id="gameLog" class="flex-1 bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-xs overflow-y-auto flex flex-col gap-1.5 font-mono max-h-[220px] lg:max-h-none">
+                    <div class="text-pink-400 font-semibold">[Setup] Welcome to Ian's 27th Birthday Monopoly! Let the birthday tycoon games begin! 🎉</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Center: Interactive Board & Controls Area -->
+        <section class="flex-1 flex flex-col items-center justify-between bg-slate-900/80 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 shadow-2xl relative overflow-hidden">
+            
+            <!-- Controls & Dice Header -->
+            <div class="w-full flex flex-wrap items-center justify-between gap-3 mb-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <div id="currentTurnBadge" class="px-3 py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-lg text-xs font-bold shadow-md flex items-center gap-2">
+                        <span id="turnPlayerIcon">🎸</span> <span id="turnPlayerName">Ian's Turn</span>
+                    </div>
+                    <div class="text-xs text-gray-300 font-medium hidden sm:block">
+                        Status: <span id="gamePhaseText" class="text-pink-300 font-bold">Ready to Roll</span>
+                    </div>
+                </div>
+
+                <!-- Dice Rolling Box -->
+                <div class="flex items-center space-x-3">
+                    <div class="flex space-x-2">
+                        <div id="die1" class="w-10 h-10 bg-white text-slate-900 rounded-xl font-bold flex items-center justify-center text-lg shadow-inner border-2 border-purple-300">🎲</div>
+                        <div id="die2" class="w-10 h-10 bg-white text-slate-900 rounded-xl font-bold flex items-center justify-center text-lg shadow-inner border-2 border-purple-300">🎲</div>
+                    </div>
+                    <button id="rollDiceBtn" onclick="playerRollDice()" class="px-5 py-2.5 bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white font-bold rounded-xl text-sm shadow-lg transform active:scale-95 transition flex items-center gap-2 birthday-glow">
+                        <span>🎲</span> Roll Dice!
+                    </button>
+                    <button id="endTurnBtn" onclick="endTurn()" disabled class="px-4 py-2.5 bg-slate-800 text-gray-500 font-bold rounded-xl text-sm cursor-not-allowed transition">
+                        End Turn ➡️
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Compact Monopoly Board Grid (28 Spaces Layout: 8x8 ring) -->
+            <div id="monopolyBoard" class="w-full aspect-square max-w-[620px] bg-slate-950 border-2 border-purple-500/50 rounded-2xl grid grid-cols-8 grid-rows-8 gap-1 p-2 relative shadow-2xl overflow-hidden select-none">
+                <!-- Center Board Greeting / Art -->
+                <div class="col-start-3 col-end-7 row-start-3 row-end-7 flex flex-col items-center justify-center text-center p-4 bg-gradient-to-br from-purple-950/80 via-slate-900/90 to-indigo-950/80 rounded-xl border border-purple-500/30 shadow-inner z-0">
+                    <div class="text-3xl mb-1">🎂🎸🎉</div>
+                    <h2 class="font-arcade text-xs md:text-sm text-pink-400 tracking-wider mb-1">IAN'S 27th</h2>
+                    <p class="text-[10px] md:text-xs text-purple-200 font-semibold mb-2">BIRTHDAY MONOPOLY</p>
+                    <div id="centerBoardMsg" class="text-[10px] text-gray-300 italic max-w-[200px]">
+                        "Build your music empire, dorm pads, and hangouts to win!"
+                    </div>
+                </div>
+                <!-- Spaces will be injected dynamically via JS -->
+            </div>
+
+            <!-- Quick Action Footer bar for current player -->
+            <div class="w-full mt-3 flex flex-wrap items-center justify-between gap-2 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800 text-xs">
+                <div class="flex items-center gap-4 text-gray-300">
+                    <div>Cash: <span id="playerCashDisplay" class="font-bold text-emerald-400">$1,500</span></div>
+                    <div>Properties Owned: <span id="playerPropsDisplay" class="font-bold text-purple-300">0</span></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openManagePropsModal()" class="px-3 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-lg font-semibold transition flex items-center gap-1">
+                        🏠 Manage Properties & Buildings
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Buy Property / Auction -->
+    <div id="propertyModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-purple-500/20 pb-3">
+                <h3 id="modalPropTitle" class="text-lg font-bold text-pink-400 flex items-center gap-2">
+                    <span>🏢</span> Property Opportunity
+                </h3>
+                <span id="modalPropColorBadge" class="px-2 py-0.5 rounded text-xs font-bold text-white">Color</span>
+            </div>
+            <div id="modalPropDetails" class="text-sm text-gray-300 flex flex-col gap-2">
+                <!-- Details inserted here -->
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2 border-t border-purple-500/20">
+                <button onclick="triggerAuctionFromModal()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition">
+                    🔨 Auction
+                </button>
+                <button onclick="buyProperty()" class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg transition">
+                    💳 Buy Property
+                </button>
+                <button onclick="skipBuyProperty()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-xl text-xs font-bold transition">
+                    ❌ Pass
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Chance / Community Chest Card Notification -->
+    <div id="cardModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-pink-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4 text-center">
+            <div class="text-4xl mb-1" id="cardModalIcon">🎁</div>
+            <h3 id="cardModalTitle" class="text-lg font-bold text-pink-400">Birthday Surprise Card!</h3>
+            <div id="cardModalText" class="text-sm text-gray-200 bg-slate-950 p-4 rounded-xl border border-slate-800 leading-relaxed font-medium">
+                <!-- Card text -->
+            </div>
+            <button onclick="closeCardModal()" class="mt-2 px-6 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white rounded-xl text-xs font-bold shadow-lg transition mx-auto">
+                Awesome! ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Manage Properties & Buildings (Houses/Hotels/Mortgage) -->
+    <div id="managePropsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4 max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-purple-500/20 pb-3">
+                <h3 class="text-lg font-bold text-purple-300 flex items-center gap-2">
+                    <span>🏠</span> Manage Properties & Build Empire
+                </h3>
+                <button onclick="closeManagePropsModal()" class="text-gray-400 hover:text-white text-sm font-bold">✕</button>
+            </div>
+            <div id="managePropsList" class="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
+                <!-- List of owned properties with Build House / Mortgage buttons -->
+            </div>
+            <div class="flex items-center justify-end pt-3 border-t border-purple-500/20">
+                <button onclick="closeManagePropsModal()" class="px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-xs font-bold transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Rules & How to Play -->
+    <div id="rulesModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-4 max-h-[85vh]">
+            <div class="flex items-center justify-between border-b border-purple-500/20 pb-3">
+                <h3 class="text-lg font-bold text-pink-400 flex items-center gap-2">
+                    <span>📜</span> Ian's 27th Birthday Monopoly Rules
+                </h3>
+                <button onclick="closeRulesModal()" class="text-gray-400 hover:text-white text-sm font-bold">✕</button>
+            </div>
+            <div class="flex-1 overflow-y-auto text-xs text-gray-300 flex flex-col gap-3 leading-relaxed pr-2">
+                <p>Welcome to Ian's 27th Birthday Monopoly! The ultimate goal is to become the wealthiest property tycoon and bankrupt your opponents while celebrating Ian's milestone!</p>
+                
+                <h4 class="font-bold text-purple-300 text-sm mt-2">1. Starting & Movement</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>Each player starts with <strong class="text-emerald-400">$1,500</strong> cash.</li>
+                    <li>Roll two dice to move around the board. Passing or landing on <strong class="text-pink-300">GO</strong> collects <strong class="text-emerald-400">$200</strong>.</li>
+                    <li>Rolling <strong class="text-yellow-400">Doubles</strong> grants you an extra turn! But roll 3 doubles in a row and you go straight to Jail!</li>
+                </ul>
+
+                <h4 class="font-bold text-purple-300 text-sm mt-2">2. Properties & Buildings</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>Land on unowned birthday properties (Music studios, U.P. Town Center hangouts, Manila dorm pads, Multimedia arts milestones) to buy them.</li>
+                    <li>Collect full <strong class="text-purple-300">Color Sets (Monopolies)</strong> to double rent and unlock the ability to build <strong class="text-pink-300">Houses and Hotels</strong> for massive rent multipliers!</li>
+                </ul>
+
+                <h4 class="font-bold text-purple-300 text-sm mt-2">3. Special Spaces</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><strong class="text-cyan-300">Chance / Community Chest:</strong> Draw custom birthday cards for bonus cash, gifts, or penalties.</li>
+                    <li><strong class="text-red-400">Go to Jail:</strong> Straight to birthday timeout! Pay $50 bail, roll doubles, or use a Get Out of Jail card to escape.</li>
+                    <li><strong class="text-amber-350 text-amber-400">Tax Spaces:</strong> Pay birthday party taxes to the bank.</li>
+                </ul>
+
+                <h4 class="font-bold text-purple-300 text-sm mt-2">4. Winning the Game</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>Mortgage properties or sell houses if you run low on cash.</li>
+                    <li>The last player standing with cash and assets wins Ian's 27th Birthday Championship! 🎂🎉</li>
+                </ul>
+            </div>
+            <div class="flex items-center justify-end pt-3 border-t border-purple-500/20">
+                <button onclick="closeRulesModal()" class="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl text-xs font-bold transition">
+                    Let's Play! 🎸
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Generic Message / Notification Box (replaces alert) -->
+    <div id="messageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-sm w-full p-6 shadow-2xl flex flex-col gap-4 text-center">
+            <div id="messageModalIcon" class="text-3xl mb-1">🎉</div>
+            <h3 id="messageModalTitle" class="text-base font-bold text-pink-400">Notification</h3>
+            <p id="messageModalText" class="text-xs text-gray-200 leading-relaxed font-medium">Message text here</p>
+            <button onclick="closeMessageModal()" class="mt-2 px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg transition mx-auto">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Logic Script -->
+    <script>
+        /* ==========================================
+           WEB AUDIO API SOUND EFFECTS & SYNTHESIZER
+           ========================================== */
+        let soundEnabled = true;
+        let voiceEnabled = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'dice') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'cash') {
+                    // Cash register chime
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'go') {
+                    // Celebration fanfare chime
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    osc.frequency.setValueAtTime(880, now + 0.3);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'jail') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.setValueAtTime(80, now + 0.2);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'card') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio error:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundStatus').innerText = soundEnabled ? "Sound On" : "Sound Off";
+            document.getElementById('soundToggleBtn').classList.toggle('bg-purple-900/60', !soundEnabled);
+        }
+
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            document.getElementById('voiceStatus').innerText = voiceEnabled ? "Voice AI On" : "Voice AI Off";
+            document.getElementById('voiceToggleBtn').classList.toggle('bg-pink-900/60', !voiceEnabled);
+        }
+
+        function speakText(text) {
+            if (!voiceEnabled || !('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.05;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.log("Speech synthesis error:", e);
+            }
+        }
+
+        function showModalMessage(title, text, icon = "🎉") {
+            document.getElementById('messageModalTitle').innerText = title;
+            document.getElementById('messageModalText').innerText = text;
+            document.getElementById('messageModalIcon').innerText = icon;
+            document.getElementById('messageModal').classList.remove('hidden');
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.add('hidden');
+        }
+
+        /* ==========================================
+           MONOPOLY GAME DATA & BOARD CONFIGURATION
+           (28 Spaces Total: 8x8 ring grid)
+           ========================================== */
+        
+        // Grid coordinates for 8x8 ring board (indices 0 to 27)
+        // Bottom row: 0 (bottom-right) to 7 (bottom-left) -> wait, let's map standard board layout around 8x8 grid:
+        // Top row: indices 14 to 21 (left to right)
+        // Right col: indices 21 to 27, 0 (top to bottom)
+        // Bottom row: indices 7 to 14 (right to left)
+        // Left col: indices 0 to 7 (bottom to top)
+        // Let's define the exact grid position (row, col) for each of the 28 spaces (0-indexed 1 to 8):
+        const boardCoords = [
+            {r: 8, c: 8}, // 0: GO
+            {r: 8, c: 7}, // 1: The Rages Band Studio 1
+            {r: 8, c: 6}, // 2: Community Chest
+            {r: 8, c: 5}, // 3: The Rages Band Studio 2
+            {r: 8, c: 4}, // 4: Income Tax
+            {r: 8, c: 3}, // 5: Soundcheck Studio Jam
+            {r: 8, c: 2}, // 6: UP Town Center Hangout 1
+            {r: 8, c: 1}, // 7: JAIL / Just Visiting
+            {r: 7, c: 1}, // 8: Manila Dorm Pad A
+            {r: 6, c: 1}, // 9: Chance
+            {r: 5, c: 1}, // 10: Manila Dorm Pad B
+            {r: 4, c: 1}, // 11: Electric Guitar Utility
+            {r: 3, c: 1}, // 12: Taft Ave Apartment 1
+            {r: 2, c: 1}, // 13: Taft Ave Apartment 2
+            {r: 1, c: 1}, // 14: FREE PARKING (Ian's Birthday Bash)
+            {r: 1, c: 2}, // 15: Multimedia Arts Lab 1
+            {r: 1, c: 3}, // 16: Community Chest
+            {r: 1, c: 4}, // 17: Multimedia Arts Lab 2
+            {r: 1, c: 5}, // 18: Luxury Tax
+            {r: 1, c: 6}, // 19: Premier Studio Gear
+            {r: 1, c: 7}, // 20: 27th Birthday Suite 1
+            {r: 1, c: 8}, // 21: GO TO JAIL
+            {r: 2, c: 8}, // 22: 27th Birthday Suite 2
+            {r: 3, c: 8}, // 23: Chance
+            {r: 4, c: 8}, // 24: VIP Lounge 1
+            {r: 5, c: 8}, // 25: Acoustic Bass Utility
+            {r: 6, c: 8}, // 26: VIP Lounge 2
+            {r: 7, c: 8}  // 27: Ian's Ultimate Penthouse
+        ];
+
+        const boardSpaces = [
+            { id: 0, name: "GO", type: "go", color: "gray", price: 0, rent: 0, icon: "🏁" },
+            { id: 1, name: "The Rages Studio A", type: "property", color: "brown", price: 60, rent: 6, houseCost: 50, houses: 0, isHotel: false, owner: null, icon: "🎸" },
+            { id: 2, name: "Community Chest", type: "chest", color: "gray", price: 0, rent: 0, icon: "📦" },
+            { id: 3, name: "The Rages Studio B", type: "property", color: "brown", price: 60, rent: 8, houseCost: 50, houses: 0, isHotel: false, owner: null, icon: "🎤" },
+            { id: 4, name: "Income Tax", type: "tax", color: "gray", price: 200, rent: 200, icon: "💸" },
+            { id: 5, name: "Soundcheck Jam", type: "property", color: "cyan", price: 100, rent: 10, houseCost: 50, houses: 0, isHotel: false, owner: null, icon: "🎧" },
+            { id: 6, name: "UP Town Center", type: "property", color: "cyan", price: 120, rent: 12, houseCost: 50, houses: 0, isHotel: false, owner: null, icon: "🍔" },
+            { id: 7, name: "Jail / Visiting", type: "jail", color: "gray", price: 0, rent: 0, icon: "👮" },
+            { id: 8, name: "Manila Dorm Pad A", type: "property", color: "pink", price: 140, rent: 14, houseCost: 100, houses: 0, isHotel: false, owner: null, icon: "🏢" },
+            { id: 9, name: "Chance", type: "chance", color: "gray", price: 0, rent: 0, icon: "❓" },
+            { id: 10, name: "Manila Dorm Pad B", type: "property", color: "pink", price: 160, rent: 16, houseCost: 100, houses: 0, isHotel: false, owner: null, icon: "🛋️" },
+            { id: 11, name: "Electric Guitar Utility", type: "utility", color: "utility", price: 150, rent: 25, houseCost: 0, houses: 0, isHotel: false, owner: null, icon: "⚡" },
+            { id: 12, name: "Taft Ave Apartment 1", type: "property", color: "orange", price: 180, rent: 18, houseCost: 100, houses: 0, isHotel: false, owner: null, icon: "🌇" },
+            { id: 13, name: "Taft Ave Apartment 2", type: "property", color: "orange", price: 200, rent: 20, houseCost: 100, houses: 0, isHotel: false, owner: null, icon: "🏙️" },
+            { id: 14, name: "Free Parking Birthday Bash", type: "parking", color: "gray", price: 0, rent: 0, icon: "🥳" },
+            { id: 15, name: "Multimedia Lab 1", type: "property", color: "red", price: 220, rent: 22, houseCost: 150, houses: 0, isHotel: false, owner: null, icon: "💻" },
+            { id: 16, name: "Community Chest", type: "chest", color: "gray", price: 0, rent: 0, icon: "📦" },
+            { id: 17, name: "Multimedia Lab 2", type: "property", color: "red", price: 240, rent: 24, houseCost: 150, houses: 0, isHotel: false, owner: null, icon: "🎬" },
+            { id: 18, name: "Luxury Tax", type: "tax", color: "gray", price: 100, rent: 100, icon: "💎" },
+            { id: 19, name: "Premier Studio Gear", type: "property", color: "yellow", price: 260, rent: 26, houseCost: 150, houses: 0, isHotel: false, owner: null, icon: "🎛️" },
+            { id: 20, name: "27th Birthday Suite 1", type: "property", color: "yellow", price: 280, rent: 28, houseCost: 150, houses: 0, isHotel: false, owner: null, icon: "🍾" },
+            { id: 21, name: "Go To Jail", type: "gotojail", color: "gray", price: 0, rent: 0, icon: "🚨" },
+            { id: 22, name: "27th Birthday Suite 2", type: "property", color: "green", price: 300, rent: 30, houseCost: 200, houses: 0, isHotel: false, owner: null, icon: "🎂" },
+            { id: 23, name: "Chance", type: "chance", color: "gray", price: 0, rent: 0, icon: "❓" },
+            { id: 24, name: "VIP Lounge 1", type: "property", color: "green", price: 320, rent: 32, houseCost: 200, houses: 0, isHotel: false, owner: null, icon: "🍸" },
+            { id: 25, name: "Acoustic Bass Utility", type: "utility", color: "utility", price: 150, rent: 25, houseCost: 0, houses: 0, isHotel: false, owner: null, icon: "🎸" },
+            { id: 26, name: "VIP Lounge 2", type: "property", color: "blue", price: 350, rent: 35, houseCost: 200, houses: 0, isHotel: false, owner: null, icon: "🌟" },
+            { id: 27, name: "Ian's Ultimate Penthouse", type: "property", color: "blue", price: 400, rent: 50, houseCost: 200, houses: 0, isHotel: false, owner: null, icon: "👑" }
+        ];
+
+        // Color mapping for Tailwind classes
+        const colorClassMap = {
+            brown: "bg-amber-900 border-amber-700",
+            cyan: "bg-cyan-600 border-cyan-400",
+            pink: "bg-pink-600 border-pink-400",
+            orange: "bg-orange-600 border-orange-400",
+            red: "bg-red-600 border-red-400",
+            yellow: "bg-yellow-600 border-yellow-400",
+            green: "bg-emerald-600 border-emerald-400",
+            blue: "bg-blue-600 border-blue-400",
+            utility: "bg-purple-700 border-purple-500",
+            gray: "bg-slate-800 border-slate-700"
+        };
+
+        // Game State
+        let players = [
+            { id: 0, name: "Ian (You)", icon: "🎸", color: "text-pink-400", bg: "bg-pink-950/60 border-pink-500", cash: 1500, position: 0, isAI: false, inJail: false, jailTurns: 0, getOutCard: false, bankrupt: false },
+            { id: 1, name: "AI Bandmate", icon: "🥁", color: "text-purple-400", bg: "bg-purple-950/60 border-purple-500", cash: 1500, position: 0, isAI: true, inJail: false, jailTurns: 0, getOutCard: false, bankrupt: false },
+            { id: 2, name: "AI Bestie", icon: "🎤", color: "text-cyan-400", bg: "bg-cyan-950/60 border-cyan-500", cash: 1500, position: 0, isAI: true, inJail: false, jailTurns: 0, getOutCard: false, bankrupt: false },
+            { id: 3, name: "AI Producer", icon: "🎧", color: "text-emerald-400", bg: "bg-emerald-950/60 border-emerald-500", cash: 1500, position: 0, isAI: true, inJail: false, jailTurns: 0, getOutCard: false, bankrupt: false }
+        ];
+
+        let currentTurnIndex = 0;
+        let roundNumber = 1;
+        let gamePhase = "ready"; // "ready", "rolled", "action", "ended"
+        let consecutiveDoubles = 0;
+        let pendingPropertyIndex = null;
+        let freeParkingPool = 0;
+
+        // Custom Birthday Chance / Community Chest Cards
+        const birthdayCards = [
+            { title: "Birthday Cake Surprise! 🎂", text: "You receive birthday monetary gifts from relatives! Collect $200.", type: "cash", amount: 200, icon: "🎂" },
+            { title: "Studio Gear Upgrade! 🎛️", text: "Your recording equipment appraisal increased. Collect $100.", type: "cash", amount: 100, icon: "🎛️" },
+            { title: "Birthday Party Expenses 🥳", text: "You hosted an epic 27th birthday blowout dinner. Pay $150.", type: "cash", amount: -150, icon: "🥳" },
+            { title: "Advance to GO! 🏁", text: "Advance directly to GO and collect $200!", type: "move", target: 0, icon: "🏁" },
+            { title: "Go To Jail 🚨", text: "Traffic jam on the way to the birthday venue! Go directly to Jail.", type: "jail", icon: "🚨" },
+            { title: "Get Out of Jail Free Card 🎫", text: "You charmed the birthday security guard! Keep this card to use in Jail.", type: "card", icon: "🎫" },
+            { title: "Concert Ticket Sales 🎵", text: "The Rages Band single hit the charts! Collect $150.", type: "cash", amount: 150, icon: "🎸" },
+            { title: "Speeding Fine 💸", text: "Caught speeding to UP Town Center for the birthday hangout. Pay $50 fine.", type: "cash", amount: -50, icon: "💸" }
+        ];
+
+        /* ==========================================
+           INITIALIZATION & RENDER FUNCTIONS
+           ========================================== */
+
+        function initGame() {
+            renderBoard();
+            updatePlayersDashboard();
+            updateTurnDisplay();
+            logMessage("[System] Game initialized. Ian's 27th Birthday Monopoly is ready!");
+            speakText("Welcome to Ian's 27th Birthday Monopoly! Let's celebrate and roll the dice!");
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('monopolyBoard');
+            // Keep center greeting element
+            const centerEl = boardEl.querySelector('#centerBoardMsg').parentElement;
+            boardEl.innerHTML = '';
+            boardEl.appendChild(centerEl);
+
+            boardSpaces.forEach((space, index) => {
+                const coord = boardCoords[index];
+                const cell = document.createElement('div');
+                cell.id = `space-${index}`;
+                cell.className = `bg-slate-900/90 border border-slate-800 rounded-lg p-1 flex flex-col justify-between items-center text-center relative overflow-hidden transition-all`;
+                cell.style.gridRow = coord.r;
+                cell.style.gridColumn = coord.c;
+
+                // Color indicator bar if property
+                let colorBar = '';
+                if (space.color && colorClassMap[space.color]) {
+                    colorBar = `<div class="w-full h-2 rounded-sm ${colorClassMap[space.color]} mb-0.5"></div>`;
+                }
+
+                cell.innerHTML = `
+                    ${colorBar}
+                    <div class="text-xs font-bold text-gray-200 truncate w-full flex items-center justify-center gap-0.5">
+                        <span>${space.icon}</span> <span class="truncate text-[9px] md:text-[10px]">${space.name}</span>
+                    </div>
+                    <div class="text-[9px] text-gray-400 font-semibold">${space.price ? '$' + space.price : ''}</div>
+                    <div id="tokens-on-${index}" class="flex flex-wrap items-center justify-center gap-0.5 mt-0.5 z-10"></div>
+                `;
+
+                boardEl.appendChild(cell);
+            });
+
+            updatePlayerTokens();
+        }
+
+        function updatePlayerTokens() {
+            // Clear all tokens
+            for (let i = 0; i < 28; i++) {
+                const tokenContainer = document.getElementById(`tokens-on-${i}`);
+                if (tokenContainer) tokenContainer.innerHTML = '';
+            }
+
+            // Place tokens
+            players.forEach(player => {
+                if (player.bankrupt) return;
+                const tokenContainer = document.getElementById(`tokens-on-${player.position}`);
+                if (tokenContainer) {
+                    const badge = document.createElement('span');
+                    badge.className = `w-4 h-4 rounded-full bg-slate-900 border border-white/40 text-[10px] flex items-center justify-center shadow-md`;
+                    badge.innerText = player.icon;
+                    badge.title = `${player.name} ($${player.cash})`;
+                    tokenContainer.appendChild(badge);
+                }
+            });
+        }
+
+        function updatePlayersDashboard() {
+            const container = document.getElementById('playersListContainer');
+            container.innerHTML = '';
+
+            players.forEach((player, idx) => {
+                const isCurrent = (idx === currentTurnIndex && !player.bankrupt);
+                const activeBorder = isCurrent ? 'border-pink-500 shadow-lg shadow-pink-500/20 ring-1 ring-pink-500' : 'border-slate-800';
+                
+                const card = document.createElement('div');
+                card.className = `${player.bg} border rounded-xl p-3 flex flex-col gap-1.5 transition ${activeBorder} ${player.bankrupt ? 'opacity-50 grayscale' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">${player.icon}</span>
+                            <span class="font-bold text-xs md:text-sm ${player.color}">${player.name}</span>
+                        </div>
+                        <span class="font-extrabold text-xs md:text-sm text-emerald-400">$${player.cash}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-gray-300">
+                        <span>Position: <strong class="text-purple-300">${boardSpaces[player.position].name}</strong></span>
+                        <span>${player.inJail ? '🔒 In Jail' : (player.bankrupt ? '💀 Bankrupt' : '✨ Active')}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateTurnDisplay() {
+            const currentPlayer = players[currentTurnIndex];
+            document.getElementById('turnPlayerIcon').innerText = currentPlayer.icon;
+            document.getElementById('turnPlayerName').innerText = `${currentPlayer.name}'s Turn`;
+            document.getElementById('playerCashDisplay').innerText = `$${currentPlayer.cash}`;
+            
+            // Count properties owned
+            const ownedCount = boardSpaces.filter(s => s.owner === currentTurnIndex).length;
+            document.getElementById('playerPropsDisplay').innerText = ownedCount;
+
+            // If current player is AI, trigger AI turn automatically after a brief delay
+            if (currentPlayer.isAI && !currentPlayer.bankrupt && gamePhase === "ready") {
+                document.getElementById('rollDiceBtn').disabled = true;
+                document.getElementById('gamePhaseText').innerText = `${currentPlayer.name} is thinking...`;
+                setTimeout(executeAITurn, 1200);
+            } else if (!currentPlayer.bankrupt) {
+                document.getElementById('rollDiceBtn').disabled = (gamePhase !== "ready");
+                document.getElementById('gamePhaseText').innerText = gamePhase === "ready" ? "Ready to Roll" : "Action Required";
+            } else {
+                // If player bankrupt, auto end turn
+                endTurn();
+            }
+        }
+
+        function logMessage(msg) {
+            const logEl = document.getElementById('gameLog');
+            const div = document.createElement('div');
+            div.className = "text-gray-300 border-l-2 border-purple-500 pl-2 py-0.5";
+            div.innerText = msg;
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        /* ==========================================
+           CORE GAMEPLAY LOGIC: DICE & MOVEMENT
+           ========================================== */
+
+        function playerRollDice() {
+            if (gamePhase !== "ready") return;
+            const player = players[currentTurnIndex];
+            if (player.isAI) return;
+
+            executeRoll(player);
+        }
+
+        function executeAITurn() {
+            const player = players[currentTurnIndex];
+            if (player.bankrupt || !player.isAI) return;
+            executeRoll(player);
+        }
+
+        function executeRoll(player) {
+            playSound('dice');
+            
+            // Handle Jail check first
+            if (player.inJail) {
+                handleJailTurn(player);
+                return;
+            }
+
+            // Roll two dice (1-6)
+            const d1 = Math.floor(Math.random() * 6) + 1;
+            const d2 = Math.floor(Math.random() * 6) + 1;
+            const total = d1 + d2;
+            const isDouble = (d1 === d2);
+
+            // Update UI Dice
+            document.getElementById('die1').innerText = d1;
+            document.getElementById('die2').innerText = d2;
+
+            logMessage(`${player.icon} ${player.name} rolled ${d1} and ${d2} (Total: ${total})${isDouble ? ' - DOUBLES! 🔥' : ''}`);
+
+            if (isDouble) {
+                consecutiveDoubles++;
+                if (consecutiveDoubles >= 3) {
+                    logMessage(`🚨 ${player.name} rolled 3 consecutive doubles and goes straight to Jail!`);
+                    playSound('jail');
+                    sendToJail(player);
+                    consecutiveDoubles = 0;
+                    gamePhase = "rolled";
+                    document.getElementById('endTurnBtn').disabled = false;
+                    document.getElementById('rollDiceBtn').disabled = true;
+                    updatePlayersDashboard();
+                    return;
+                }
+            } else {
+                consecutiveDoubles = 0;
+            }
+
+            // Move player position around 28 spaces
+            const oldPos = player.position;
+            player.position = (player.position + total) % 28;
+
+            // Check if passed or landed on GO (index 0)
+            if (player.position < oldPos || player.position === 0) {
+                player.cash += 200;
+                playSound('go');
+                logMessage(`🏁 ${player.name} passed GO and collected $200 birthday salary!`);
+                speakText(`${player.name} passed go and collected 200 dollars!`);
+            }
+
+            updatePlayerTokens();
+            updatePlayersDashboard();
+
+            // Handle space landing action
+            handleSpaceLanding(player, isDouble);
+        }
+
+        /* ==========================================
+           SPACE LANDING & ACTION RESOLUTION
+           ========================================== */
+
+        function handleSpaceLanding(player, isDouble) {
+            const space = boardSpaces[player.position];
+            logMessage(`📍 ${player.name} landed on ${space.icon} ${space.name}`);
+
+            if (space.type === "property" || space.type === "utility") {
+                if (space.owner === null) {
+                    // Unowned property
+                    if (!player.isAI) {
+                        pendingPropertyIndex = player.position;
+                        showPropertyBuyModal(space);
+                    } else {
+                        // AI decision: buy if enough cash
+                        if (player.cash >= space.price + 100) {
+                            player.cash -= space.price;
+                            space.owner = player.id;
+                            playSound('cash');
+                            logMessage(`🤖 ${player.name} bought ${space.name} for $${space.price}!`);
+                            finishTurnAction(isDouble);
+                        } else {
+                            logMessage(`🤖 ${player.name} passed on buying ${space.name}.`);
+                            finishTurnAction(isDouble);
+                        }
+                    }
+                } else if (space.owner === player.id) {
+                    logMessage(`✨ ${player.name} visited their own property.`);
+                    finishTurnAction(isDouble);
+                } else {
+                    // Pay Rent to owner
+                    const owner = players[space.owner];
+                    let rent = calculateRent(space);
+                    
+                    logMessage(`💸 ${player.name} paid $${rent} rent to ${owner.name} for landing on ${space.name}.`);
+                    playSound('cash');
+                    
+                    player.cash -= rent;
+                    owner.cash += rent;
+
+                    if (player.cash < 0) {
+                        handleBankruptcy(player, owner);
+                    }
+
+                    updatePlayersDashboard();
+                    finishTurnAction(isDouble);
+                }
+            } else if (space.type === "chance" || space.type === "chest") {
+                drawBirthdayCard(player, isDouble);
+            } else if (space.type === "tax") {
+                logMessage(`💸 ${player.name} paid tax of $${space.price}.`);
+                playSound('cash');
+                player.cash -= space.price;
+                if (player.cash < 0) handleBankruptcy(player, null);
+                updatePlayersDashboard();
+                finishTurnAction(isDouble);
+            } else if (space.type === "gotojail") {
+                playSound('jail');
+                logMessage(`🚨 ${player.name} was sent to Jail!`);
+                sendToJail(player);
+                updatePlayersDashboard();
+                finishTurnAction(false);
+            } else {
+                // GO, Jail visiting, Free Parking
+                if (space.type === "parking" && freeParkingPool > 0) {
+                    player.cash += freeParkingPool;
+                    logMessage(`🥳 ${player.name} collected $${freeParkingPool} from Free Parking Birthday Pool!`);
+                    playSound('go');
+                    freeParkingPool = 0;
+                }
+                finishTurnAction(isDouble);
+            }
+        }
+
+        function calculateRent(space) {
+            let rent = space.rent;
+            if (space.isHotel) {
+                rent *= 5;
+            } else if (space.houses > 0) {
+                rent *= (space.houses + 1);
+            } else {
+                // Check if owner has color monopoly (all properties of same color)
+                const colorSpaces = boardSpaces.filter(s => s.color === space.color);
+                const allOwnedByOwner = colorSpaces.every(s => s.owner === space.owner);
+                if (allOwnedByOwner) {
+                    rent *= 2; // Monopoly doubles base rent
+                }
+            }
+            return rent;
+        }
+
+        function finishTurnAction(isDouble) {
+            updatePlayersDashboard();
+            const player = players[currentTurnIndex];
+
+            if (isDouble && !player.inJail && !player.bankrupt) {
+                logMessage(`🔥 ${player.name} rolled doubles and gets another turn!`);
+                gamePhase = "ready";
+                updateTurnDisplay();
+            } else {
+                gamePhase = "rolled";
+                document.getElementById('rollDiceBtn').disabled = true;
+                document.getElementById('endTurnBtn').disabled = false;
+                document.getElementById('gamePhaseText').innerText = "Turn complete. Click End Turn.";
+
+                if (player.isAI && !player.bankrupt) {
+                    setTimeout(endTurn, 1500);
+                }
+            }
+        }
+
+        /* ==========================================
+           PROPERTY PURCHASE & MODAL HANDLERS
+           ========================================== */
+
+        function showPropertyBuyModal(space) {
+            const player = players[currentTurnIndex];
+            document.getElementById('modalPropTitle').innerText = space.name;
+            document.getElementById('modalPropColorBadge').innerText = space.color.toUpperCase();
+            document.getElementById('modalPropColorBadge').className = `px-2 py-0.5 rounded text-xs font-bold text-white ${colorClassMap[space.color] || 'bg-slate-700'}`;
+
+            document.getElementById('modalPropDetails').innerHTML = `
+                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl">
+                    <span>Price:</span>
+                    <strong class="text-emerald-400 text-base">$${space.price}</strong>
+                </div>
+                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl">
+                    <span>Base Rent:</span>
+                    <strong class="text-pink-300">$${space.rent}</strong>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Would you like to purchase this property for Ian's real estate empire?</p>
+            `;
+
+            document.getElementById('propertyModal').classList.remove('hidden');
+        }
+
+        function buyProperty() {
+            document.getElementById('propertyModal').classList.add('hidden');
+            const player = players[currentTurnIndex];
+            const space = boardSpaces[pendingPropertyIndex];
+
+            if (player.cash >= space.price) {
+                player.cash -= space.price;
+                space.owner = player.id;
+                playSound('cash');
+                logMessage(`🎉 ${player.name} successfully purchased ${space.name} for $${space.price}!`);
+                speakText(`${player.name} bought ${space.name}!`);
+            } else {
+                showModalMessage("Insufficient Funds", "You do not have enough cash to buy this property!", "💸");
+            }
+
+            updatePlayersDashboard();
+            finishTurnAction(consecutiveDoubles > 0);
+        }
+
+        function skipBuyProperty() {
+            document.getElementById('propertyModal').classList.add('hidden');
+            const space = boardSpaces[pendingPropertyIndex];
+            logMessage(`${players[currentTurnIndex].name} passed on buying ${space.name}.`);
+            finishTurnAction(consecutiveDoubles > 0);
+        }
+
+        function triggerAuctionFromModal() {
+            document.getElementById('propertyModal').classList.add('hidden');
+            const space = boardSpaces[pendingPropertyIndex];
+            logMessage(`🔨 Auction triggered for ${space.name}! (Awarded to highest bidder AI/Player)`);
+            
+            // Simple auction simulation: give to active player with highest cash
+            let eligible = players.filter(p => !p.bankrupt && p.cash >= Math.floor(space.price * 0.8));
+            if (eligible.length > 0) {
+                eligible.sort((a, b) => b.cash - a.cash);
+                const winner = eligible[0];
+                const bidPrice = Math.floor(space.price * 0.8);
+                winner.cash -= bidPrice;
+                space.owner = winner.id;
+                playSound('cash');
+                logMessage(`🏆 ${winner.name} won the auction for ${space.name} at a discount price of $${bidPrice}!`);
+                showModalMessage("Auction Result", `${winner.name} won the auction for ${space.name} for $${bidPrice}!`, "🔨");
+            } else {
+                logMessage(`No players could afford the auction for ${space.name}.`);
+            }
+
+            updatePlayersDashboard();
+            finishTurnAction(consecutiveDoubles > 0);
+        }
+
+        /* ==========================================
+           CHANCE & COMMUNITY CHEST CARDS
+           ========================================== */
+
+        function drawBirthdayCard(player, isDouble) {
+            playSound('card');
+            const card = birthdayCards[Math.floor(Math.random() * birthdayCards.length)];
+            
+            document.getElementById('cardModalIcon').innerText = card.icon;
+            document.getElementById('cardModalTitle').innerText = card.title;
+            document.getElementById('cardModalText').innerText = card.text;
+            document.getElementById('cardModal').classList.remove('hidden');
+
+            logMessage(`🎁 ${player.name} drew card: "${card.title}"`);
+            speakText(card.text);
+
+            // Apply card effect
+            if (card.type === "cash") {
+                player.cash += card.amount;
+                if (card.amount < 0 && player.cash < 0) handleBankruptcy(player, null);
+            } else if (card.type === "move") {
+                player.position = card.target;
+                player.cash += 200; // Passed GO
+                playSound('go');
+            } else if (card.type === "jail") {
+                sendToJail(player);
+            } else if (card.type === "card") {
+                player.getOutCard = true;
+            }
+
+            updatePlayerTokens();
+            updatePlayersDashboard();
+            // Store isDouble context for closing modal
+            window.lastCardIsDouble = isDouble;
+        }
+
+        function closeCardModal() {
+            document.getElementById('cardModal').classList.add('hidden');
+            finishTurnAction(window.lastCardIsDouble || false);
+        }
+
+        /* ==========================================
+           JAIL & BANKRUPTCY MECHANICS
+           ========================================== */
+
+        function sendToJail(player) {
+            player.position = 7; // Jail space index
+            player.inJail = true;
+            player.jailTurns = 0;
+            consecutiveDoubles = 0;
+        }
+
+        function handleJailTurn(player) {
+            player.jailTurns++;
+            logMessage(`🔒 ${player.name} is in birthday jail (Attempt ${player.jailTurns}/3)`);
+
+            // Try rolling doubles to escape
+            const d1 = Math.floor(Math.random() * 6) + 1;
+            const d2 = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('die1').innerText = d1;
+            document.getElementById('die2').innerText = d2;
+
+            if (d1 === d2) {
+                logMessage(`✨ ${player.name} rolled doubles (${d1}, ${d2}) and escaped Jail!`);
+                player.inJail = false;
+                player.jailTurns = 0;
+                executeRoll(player); // Roll again to move
+                return;
+            }
+
+            if (player.getOutCard) {
+                logMessage(`🎫 ${player.name} used 'Get Out of Jail Free' card!`);
+                player.getOutCard = false;
+                player.inJail = false;
+                player.jailTurns = 0;
+                executeRoll(player);
+                return;
+            }
+
+            if (player.jailTurns >= 3 || player.cash >= 50) {
+                logMessage(`💸 ${player.name} paid $50 bail to exit Jail.`);
+                player.cash -= 50;
+                player.inJail = false;
+                player.jailTurns = 0;
+                playSound('cash');
+                executeRoll(player);
+                return;
+            }
+
+            // Cannot escape
+            finishTurnAction(false);
+        }
+
+        function handleBankruptcy(player, creditor) {
+            player.bankrupt = true;
+            playSound('jail');
+            logMessage(`💀 ${player.name} went BANKRUPT!`);
+            speakText(`${player.name} is bankrupt! Game over for them.`);
+
+            // Transfer properties to creditor or bank
+            boardSpaces.forEach(space => {
+                if (space.owner === player.id) {
+                    space.owner = creditor ? creditor.id : null;
+                    space.houses = 0;
+                    space.isHotel = false;
+                }
+            });
+
+            // Check if game is won (only 1 active player left)
+            const activePlayers = players.filter(p => !p.bankrupt);
+            if (activePlayers.length === 1) {
+                const winner = activePlayers[0];
+                gamePhase = "ended";
+                logMessage(`🏆 ${winner.name} wins Ian's 27th Birthday Monopoly Championship! 🎉`);
+                showModalMessage("👑 Championship Victory!", `${winner.name} is the wealthiest property tycoon and winner of Ian's 27th Birthday Monopoly! 🎉`, "🏆");
+                speakText(`${winner.name} wins Ian's 27th Birthday Monopoly! Congratulations!`);
+            }
+        }
+
+        /* ==========================================
+           PROPERTY MANAGEMENT (HOUSES / HOTELS / MORTGAGE)
+           ========================================== */
+
+        function openManagePropsModal() {
+            const player = players[currentTurnIndex];
+            const container = document.getElementById('managePropsList');
+            container.innerHTML = '';
+
+            const ownedProps = boardSpaces.filter(s => s.owner === player.id);
+
+            if (ownedProps.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-400 py-6">You don't own any birthday properties yet! Keep playing and buying.</div>`;
+            } else {
+                ownedProps.forEach(space => {
+                    const item = document.createElement('div');
+                    item.className = "bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3";
+                    
+                    item.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${space.icon}</span>
+                            <div>
+                                <h4 class="font-bold text-xs md:text-sm text-pink-300">${space.name}</h4>
+                                <p class="text-[10px] text-gray-400">Rent: $${calculateRent(space)} | Houses: ${space.houses} ${space.isHotel ? '(Hotel 🏨)' : ''}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${space.type === 'property' && !space.isHotel && space.houses < 4 ? `
+                                <button onclick="buildHouse(${space.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
+                                    🏠 Build House ($${space.houseCost})
+                                </button>
+                            ` : ''}
+                            ${space.type === 'property' && space.houses === 4 && !space.isHotel ? `
+                                <button onclick="buildHotel(${space.id})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition">
+                                    🏨 Upgrade Hotel ($${space.houseCost})
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            document.getElementById('managePropsModal').classList.remove('hidden');
+        }
+
+        function closeManagePropsModal() {
+            document.getElementById('managePropsModal').classList.add('hidden');
+        }
+
+        function buildHouse(spaceId) {
+            const player = players[currentTurnIndex];
+            const space = boardSpaces[spaceId];
+
+            if (player.cash >= space.houseCost) {
+                player.cash -= space.houseCost;
+                space.houses++;
+                playSound('cash');
+                logMessage(`🏠 ${player.name} built a house on ${space.name} for $${space.houseCost}!`);
+                updatePlayersDashboard();
+                openManagePropsModal(); // Refresh modal list
+            } else {
+                showModalMessage("Insufficient Funds", "Not enough cash to build a house!", "💸");
+            }
+        }
+
+        function buildHotel(spaceId) {
+            const player = players[currentTurnIndex];
+            const space = boardSpaces[spaceId];
+
+            if (player.cash >= space.houseCost) {
+                player.cash -= space.houseCost;
+                space.houses = 0;
+                space.isHotel = true;
+                playSound('cash');
+                logMessage(`🏨 ${player.name} upgraded ${space.name} to a Hotel for $${space.houseCost}!`);
+                updatePlayersDashboard();
+                openManagePropsModal();
+            } else {
+                showModalMessage("Insufficient Funds", "Not enough cash to upgrade to a hotel!", "💸");
+            }
+        }
+
+        /* ==========================================
+           TURN MANAGEMENT & END TURN
+           ========================================== */
+
+        function endTurn() {
+            if (gamePhase !== "rolled" && !players[currentTurnIndex].bankrupt) return;
+
+            // Advance to next active player
+            do {
+                currentTurnIndex = (currentTurnIndex + 1) % players.length;
+                if (currentTurnIndex === 0) {
+                    roundNumber++;
+                    document.getElementById('roundIndicator').innerText = `Round ${roundNumber}`;
+                }
+            } while (players[currentTurnIndex].bankrupt);
+
+            gamePhase = "ready";
+            consecutiveDoubles = 0;
+            document.getElementById('endTurnBtn').disabled = true;
+            document.getElementById('rollDiceBtn').disabled = false;
+            
+            updateTurnDisplay();
+            updatePlayersDashboard();
+            logMessage(`--- Turn passed to ${players[currentTurnIndex].name} ---`);
+        }
+
+        function openRulesModal() {
+            document.getElementById('rulesModal').classList.remove('hidden');
+        }
+
+        function closeRulesModal() {
+            document.getElementById('rulesModal').classList.add('hidden');
+        }
+
+        // Initialize game on window load
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
